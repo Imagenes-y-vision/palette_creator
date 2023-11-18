@@ -32,14 +32,15 @@ class KMeans(Model, SKLearnKMeans):
         )
 
     def create_palette(self, image: np.ndarray) -> tuple[list, list]:
-        self._validate_image(image)
-
-        # reshape to vector of features, where a feature is the color (a feature is a vector of 3 dimensions, rgb)
+        # reshape to vector of features, where a feature is the color (a feature is a vector of 3 dimensions, i.e., rgb)
         img_reshape = image.reshape(-1, 3)
 
+        # the algorithm of clustering is done here via scikit-learn
         self.fit(img_reshape)
 
         # in Kmeans, the colors of the palette are the centroids
         palette = self.cluster_centers_.astype(int)
-        proportions = list(np.unique(self.labels_, return_counts=True)[1]/len(self.labels_))
+        proportions = list(
+            np.unique(self.labels_, return_counts=True)[1] / len(self.labels_)
+        )
         return palette, proportions

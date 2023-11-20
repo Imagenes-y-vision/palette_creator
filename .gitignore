@@ -10,7 +10,7 @@ __pycache__
 
 
 # dependencies
-palette_app/rontend/node_modules
+palette_app/frontend/node_modules
 palette_app/frontend/.pnp
 .pnp.js
 .yarn/install-state.gz

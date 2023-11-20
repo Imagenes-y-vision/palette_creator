@@ -19,7 +19,7 @@ type ImagesResponse = {
   }[];
 }
 
-export default function Home(params: { params: {}, searchParams: {filter?: string}}) {
+export default function Home(params: { params: {}, searchParams: {filter?: string, page?: string}}) {
   const initialData = {
     page: 0,
     results: 0,
@@ -30,21 +30,26 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
   // page state
   const [page, setPage] = useState(1)
   const [data, setData] = useState<ImagesResponse>(initialData)
-  const [filter, setFilter] = useState<string[]>()
 
-  console.log('params', params.searchParams.filter)
+  useEffect(() => {
+    const page_number = parseInt(params.searchParams.page || '1')
+    if (page_number !== page)
+      setPage(page_number)
+  }, [params.searchParams.page])
 
   useEffect(() => {
     fetchImages()
   }, [page])
 
-  useEffect(() => {
-    if (params.searchParams.filter)
-      setFilter(params.searchParams.filter.split(','))
-  }, [params.searchParams.filter])
+  const filter = params.searchParams.filter ? params.searchParams.filter.split(',') : undefined
 
   // fetch data from API
   const fetchImages = async () => {
+    // Wait until the page is the same as the page number in the query param
+    if (page !== parseInt(params.searchParams.page || '1')) {
+      return
+    }
+
     if (filter) {
       const response = await fetch(`http://localhost:8000?page=${page}&limit=6&filter=${filter.join(',')}`)
       const data_ = await response.json()
@@ -58,11 +63,6 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
     } catch (error) {
       console.error("Error al realizar la solicitud fetch:", error);
       }
-  }
-
-  // page change handler
-  const handlePageChange = (page: number) => {
-    setPage(page)
   }
 
   return (
@@ -85,7 +85,6 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
           {/* Button to remove the filter */}
           <Link href="/">
             <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-              onClick={() => {setFilter(undefined); setPage(1)}}
             >
               Remover filtro
             </button>
@@ -118,18 +117,20 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
 
         {/* Paginator */}
         <div className="flex justify-between items-center">
+          <Link href={`/?page=${page - 1}${ filter ? '&filter=' + params.searchParams.filter : ''}`}>
           <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
           disabled={page === 1}
-          onClick={() => handlePageChange(page - 1)}
           >
             Anterior
           </button>
+          </Link>
+          <Link href={`/?page=${page + 1}${ filter ? '&filter=' + params.searchParams.filter : ''}`}>
           <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
           disabled={page === data.total_pages}
-          onClick={() => handlePageChange(page + 1)}
           >
             Siguiente
           </button>
+          </Link>
         </div>
     </main>
   )

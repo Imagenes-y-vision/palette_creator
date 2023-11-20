@@ -27,7 +27,7 @@ async def list_images(request: Request, page: int = 1, limit: int = 6):
 
     images = []
     for image in images_data_list[start:end]:
-        image["url"] = f"{server_url}{image['url']}"
+        image["url"] = f"{server_url}image/{image['filename']}"
         images.append(image)
     
     return {
@@ -51,7 +51,7 @@ async def get_image(request: Request, param: Union[int, str]):
         image_id = str(param)
         if image_id in images_data:
             image = images_data[image_id]
-            image["url"] = f"{server_url}{image['url']}"
+            image["url"] = f"{server_url}image/{image['filename']}"
             return ImagePalette(**image)
         raise HTTPException(status_code=404, detail="Image ID not found")
     else:

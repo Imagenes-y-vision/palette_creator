@@ -1,5 +1,5 @@
 import numpy as np
-from palette_creator.methods import KMeans, Model
+from palette_creator.methods import KMeans, Model, MedianCut
 
 
 class PaletteCreator:
@@ -26,9 +26,13 @@ class PaletteCreator:
 
         """
         results = []
-        for image in images:
+        for i, image in enumerate(images):
             self.__validate_image(image)
-            palette, proportions = self.__model.create_palette(image)
+            try:
+                palette, proportions = self.__model.create_palette(image)
+            except Exception as err:
+                print(f"Error in image {i}")
+                raise err
             # Sort the colors and proportions by proportions
             palette, proportions = zip(
                 *sorted(zip(palette, proportions), key=lambda x: x[1], reverse=True)
@@ -39,6 +43,8 @@ class PaletteCreator:
     def __init_model(self, method, num_colors) -> Model:
         if method == "kmeans":
             return KMeans(n_clusters=num_colors, n_init="auto")
+        elif method == "median_cut":
+            return MedianCut(palette_colors=num_colors)
 
         else:
             raise NotImplementedError

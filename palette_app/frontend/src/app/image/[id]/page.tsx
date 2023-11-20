@@ -5,21 +5,6 @@ import styles from './styles.module.css'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const mockData = {
-  "id": 1,
-  "title": "Alejandro Escamilla",
-  "url": "https://images.pexels.com/photos/19017576/pexels-photo-19017576/free-photo-of-fotografia-de-girasoles.jpeg",
-  "description": "lorem ipsum",
-  "palette": [
-    [123, 123, 123],
-    [123, 123, 123],
-    [123, 123, 123],
-    [123, 123, 123],
-    [123, 123, 123],
-    [123, 123, 123],
-  ]
-}
-
 type ImageResponse = {
   id: number;
   title: string;
@@ -37,9 +22,9 @@ export default function ImageDetail({ params }: { params: { id: string }}) {
 
   // fetch data from API
   const fetchImage = async () => {
-    // const response = await fetch(`https://asdsad.com?/image/${params.id}`)
-    // const data_ = await response.json()
-    setData(mockData)
+    const response = await fetch(`http://localhost:8000/image/${params.id}`)
+    const data_ = await response.json()
+    setData(data_)
   }
 
   return (

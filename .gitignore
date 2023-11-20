@@ -1,5 +1,6 @@
 venv
 data
+palette_app/backend/images
 
 __pycache__
 
@@ -9,20 +10,20 @@ __pycache__
 
 
 # dependencies
-palette_frontend/node_modules
-palette_frontend/.pnp
+palette_app/frontend/node_modules
+palette_app/frontend/.pnp
 .pnp.js
 .yarn/install-state.gz
 
 # testing
-palette_frontend/coverage
+palette_app/frontend/coverage
 
 # next.js
-palette_frontend/.next/
-palette_frontend/out/
+palette_app/frontend/.next/
+palette_app/frontend/out/
 
 # production
-palette_frontend/build
+palette_app/frontend/build
 
 # misc
 .DS_Store

@@ -5,50 +5,6 @@ import styles from './styles.module.css'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const mockData = {
-  "page": 0,
-  "results": 6,
-  "total": 6,
-  "total_pages": 4,
-  "images": [
-    {
-      "id": 1,
-      "title": "Alejandro Escamilla",
-      "url": "https://images.pexels.com/photos/19017576/pexels-photo-19017576/free-photo-of-fotografia-de-girasoles.jpeg",
-      "description": "lorem ipsum",
-    },
-    {
-      "id": 2,
-      "title": "Alejandro Escamilla",
-      "url": "https://images.pexels.com/photos/19017576/pexels-photo-19017576/free-photo-of-fotografia-de-girasoles.jpeg",
-      "description": "lorem ipsum",
-    },
-    {
-      "id": 3,
-      "title": "Alejandro Escamilla",
-      "url": "https://images.pexels.com/photos/19017576/pexels-photo-19017576/free-photo-of-fotografia-de-girasoles.jpeg",
-      "description": "lorem ipsum",
-    },
-    {
-      "id": 4,
-      "title": "Alejandro Escamilla",
-      "url": "https://images.pexels.com/photos/19017576/pexels-photo-19017576/free-photo-of-fotografia-de-girasoles.jpeg",
-      "description": "lorem ipsum",
-    },
-    {
-      "id": 5,
-      "title": "Alejandro Escamilla",
-      "url": "https://images.pexels.com/photos/19017576/pexels-photo-19017576/free-photo-of-fotografia-de-girasoles.jpeg",
-      "description": "lorem ipsum",
-    },
-    {
-      "id": 6,
-      "title": "Alejandro Escamilla",
-      "url": "https://images.pexels.com/photos/19017576/pexels-photo-19017576/free-photo-of-fotografia-de-girasoles.jpeg",
-      "description": "lorem ipsum",
-    },
-  ]
-}
 
 type ImagesResponse = {
   page: number;
@@ -90,14 +46,18 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
   // fetch data from API
   const fetchImages = async () => {
     if (filter) {
-      // const response = await fetch(`https://asdsad.com?page=${page}&limit=6&filter=${filter.join(',')}`)
-      // const data_ = await response.json()
-      setData(mockData)
+      const response = await fetch(`http://localhost:8000?page=${page}&limit=6&filter=${filter.join(',')}`)
+      const data_ = await response.json()
+      setData(data_)
       return
     }
-    // const response = await fetch(`https://asdsad.com?page=${page}&limit=6`)
-    // const data_ = await response.json()
-    setData(mockData)
+    try {
+    const response = await fetch(`http://localhost:8000?page=${page}&limit=6`);
+     const data_ = await response.json();
+    setData(data_);
+    } catch (error) {
+      console.error("Error al realizar la solicitud fetch:", error);
+      }
   }
 
   // page change handler

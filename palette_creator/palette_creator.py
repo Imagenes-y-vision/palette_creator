@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 from palette_creator.methods import KMeans, Model, MedianCut
 
 
@@ -26,7 +27,8 @@ class PaletteCreator:
 
         """
         results = []
-        for i, image in enumerate(images):
+        for i in tqdm(range(len(images))):
+            image = images[i]
             self.__validate_image(image)
             try:
                 palette, proportions = self.__model.create_palette(image)

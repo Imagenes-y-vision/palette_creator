@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 from palette_creator.methods.abstract_model import Model
 
 
@@ -28,6 +29,11 @@ class MedianCut(Model):
         # reshape to vector of features, where a feature is the color (a feature is a vector of 3 dimensions, i.e., rgb)
         img_reshape = image.reshape(-1, 3).astype(int)
 
+        # Rezise image if it is too big
+        while len(img_reshape) > 1000000:
+            image = cv2.resize(image, None, fx = 0.75, fy = 0.75)
+            img_reshape = image.reshape(-1, 3)
+
         # get the initial box
         box = [img_reshape]
 
@@ -36,39 +42,34 @@ class MedianCut(Model):
             box_to_split = -1 # get the group with the largest range
             box1 = []
             box2 = []
-            while len(box1) == 0 or len(box2) == 0:
-                # get the box with the largest side
-                greatest_range_for_box = np.argsort(np.max([np.max(box[i], axis=0) - np.min(box[i], axis=0) for i in range(len(box))], axis=1))
-                largest_box = greatest_range_for_box[box_to_split]
-                # get the largest side of the box
-                range_by_channel = np.argsort(np.max(box[largest_box], axis=0) - np.min(box[largest_box], axis=0))
-                largest_side = range_by_channel[-1]
+            
+            # get the box with the largest side
+            greatest_range_for_box = np.argsort(np.max([np.max(box[i], axis=0) - np.min(box[i], axis=0) for i in range(len(box))], axis=1))
+            largest_box = greatest_range_for_box[box_to_split]
+            # get the largest side of the box
+            range_by_channel = np.argsort(np.max(box[largest_box], axis=0) - np.min(box[largest_box], axis=0))
+            largest_side = range_by_channel[-1]
 
-                # get the median of the largest side
+            # get the median of the largest side
+            median = np.median(box[largest_box][:, largest_side])
+            # split the box in two
+            box1 = box[largest_box][box[largest_box][:, largest_side] <= median]
+            box2 = box[largest_box][box[largest_box][:, largest_side] > median]
+
+            # if the split was not successful, try again with the second largest side
+            side = -2
+            while len(box1) == 0 or len(box2) == 0:
+                largest_side = range_by_channel[side]
                 median = np.median(box[largest_box][:, largest_side])
-                # split the box in two
                 box1 = box[largest_box][box[largest_box][:, largest_side] <= median]
                 box2 = box[largest_box][box[largest_box][:, largest_side] > median]
+                side -= 1
 
-                # if the split was not successful, try again with the second largest side
-                side = -2
-                while len(box1) == 0 or len(box2) == 0:
-                    largest_side = range_by_channel[side]
-                    median = np.median(box[largest_box][:, largest_side])
-                    box1 = box[largest_box][box[largest_box][:, largest_side] <= median]
-                    box2 = box[largest_box][box[largest_box][:, largest_side] > median]
-                    side -= 1
-
-                    if side == -4:
-                        break
-                
-                box_to_split -= 1
-                if box_to_split < -len(box):
+                if side == -4:
                     break
 
             # if the split was not successful, divide the largest box in two
             if len(box1) == 0 or len(box2) == 0:
-                largest_box = np.argmax([len(box[i]) for i in range(len(box))])
                 box1 = box[largest_box][:len(box[largest_box]) // 2]
                 box2 = box[largest_box][len(box[largest_box]) // 2:]
             

@@ -5,8 +5,22 @@ from typing import Union
 from models import Image, ImageList, ImagePalette
 import json
 from urllib.parse import urljoin
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",  # URL de tu aplicación React
+    "http://localhost:8000",  # URL de tu servidor FastAPI
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Lista de orígenes permitidos
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos
+    allow_headers=["*"],  # Permite todos los headers
+)
 
 image_folder = Path(__file__).parent / "images"
 

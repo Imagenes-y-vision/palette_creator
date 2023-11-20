@@ -1,6 +1,6 @@
 venv
 data
-backend/images
+palette_app/backend/images
 
 __pycache__
 

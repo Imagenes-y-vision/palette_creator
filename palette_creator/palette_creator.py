@@ -19,28 +19,31 @@ class PaletteCreator:
         self.__model = self.__init_method(method, num_colors)
         self.num_colors = num_colors
 
-    def create_palette(self, images: list[np.ndarray]) -> list[tuple[list, list]]:
+    def create_palette(self, images: list[np.ndarray]) -> tuple[list, list]:
         """Create the palettes of a list of images
 
         :param list[np.ndarray] images: list of images
         :returns:
 
         """
-        results = []
+        palettes, proportions = [], []
         for i in tqdm(range(len(images))):
             image = images[i]
             self.__validate_image(image)
             try:
-                palette, proportions = self.__model.create_palette(image)
+                palette_img, proportions_img = self.__model.create_palette(image)
             except Exception as err:
                 print(f"Error in image {i}")
                 raise err
             # Sort the colors and proportions by proportions
-            palette, proportions = zip(
-                *sorted(zip(palette, proportions), key=lambda x: x[1], reverse=True)
+            palette_img, proportions_img = zip(
+                *sorted(zip(palette_img, proportions_img), key=lambda x: x[1], reverse=True)
             )
-            results.append((palette, proportions))
-        return results
+            palette_img = np.array(palette_img)
+            proportions_img = np.array(proportions_img)
+            palettes.append(palette_img)
+            proportions.append(proportions_img)
+        return palettes, proportions
 
     def __init_method(self, method, num_colors) -> Method:
         if method == "kmeans":

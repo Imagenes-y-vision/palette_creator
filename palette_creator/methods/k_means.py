@@ -40,7 +40,5 @@ class KMeans(Method, SKLearnKMeans):
 
         # in Kmeans, the colors of the palette are the centroids
         palette = self.cluster_centers_.astype(int)
-        proportions = list(
-            np.unique(self.labels_, return_counts=True)[1] / len(self.labels_)
-        )
+        proportions = np.unique(self.labels_, return_counts=True)[1] / len(self.labels_)
         return palette, proportions

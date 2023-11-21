@@ -37,7 +37,7 @@ def get_mse(image: np.ndarray, quantized_image: np.ndarray) -> float:
         """
         return np.mean((image - quantized_image) ** 2)
 
-def quantize_image(image: np.ndarray, palette: np.ndarray):
+def quantize_image(image: np.ndarray, palette: np.ndarray) -> np.ndarray:
     reshaped_image = image.reshape(-1, 1, 3)
     reshaped_palette = palette.reshape(1, -1, 3)
 
@@ -51,8 +51,11 @@ def quantize_image(image: np.ndarray, palette: np.ndarray):
     mapped_image = palette[nearest_color_indices].reshape(image.shape)
     return mapped_image
     
-def bit_cut(image: np.ndarray, cut=3):
-    return image//(2**cut)
+def bit_cut(image: np.ndarray, k=3) -> np.ndarray:
+    return image//(2**k) + 1
 
-def bit_amplify(image: np.ndarray, amplify=3):
-    return image*(2**amplify)
+def bit_amplify(image: np.ndarray, k=3) -> np.ndarray:
+    return image*(2**k) - 1
+
+def gaussian_filter(image: np.ndarray) -> np.ndarray:
+    pass

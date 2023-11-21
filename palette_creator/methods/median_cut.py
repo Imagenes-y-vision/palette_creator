@@ -1,9 +1,9 @@
 import numpy as np
 import cv2
-from palette_creator.methods.abstract_model import Model
+from palette_creator.methods.abstract_method import Method
 
 
-class MedianCut(Model):
+class MedianCut(Method):
     """MedianCut palette creator."""
 
     def __init__(

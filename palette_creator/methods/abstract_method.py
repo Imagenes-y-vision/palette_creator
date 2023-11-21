@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
-class Model(ABC):
+class Method(ABC):
     @abstractmethod
     def create_palette(self, image: np.ndarray) -> tuple[list, list]:
         """Create the palette of an image sorted by the proportions.

@@ -30,3 +30,24 @@ def show_palette(palette, color_size=10, img=None):
 
         # Show the figure
     plt.show()
+
+def get_mse(image: np.ndarray, quantized_image: np.ndarray) -> float:
+        """
+        Calculate the Mean Squared Error between two images.
+        """
+        return np.mean((image - quantized_image) ** 2)
+
+def quantize_image(image: np.ndarray, palette: np.ndarray):
+    reshaped_image = image.reshape(-1, 1, 3)
+    reshaped_palette = palette.reshape(1, -1, 3)
+
+    # Calculate the L2 norm (Euclidean distance) between each pixel and each palette color
+    distances = np.linalg.norm(reshaped_image - reshaped_palette, axis=2)
+
+    # Find the index of the nearest color for each pixel
+    nearest_color_indices = np.argmin(distances, axis=1)
+
+    # Map the pixels to the nearest colors
+    mapped_image = palette[nearest_color_indices].reshape(image.shape)
+    return mapped_image
+    

@@ -1,9 +1,9 @@
 import numpy as np
 from sklearn.cluster import KMeans as SKLearnKMeans
-from palette_creator.methods.abstract_model import Model
+from palette_creator.methods.abstract_method import Method
 
 
-class KMeans(Model, SKLearnKMeans):
+class KMeans(Method, SKLearnKMeans):
     """K-means palette creator."""
 
     def __init__(

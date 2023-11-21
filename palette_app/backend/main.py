@@ -6,6 +6,7 @@ from models import Image, ImageList, ImagePalette
 import json
 from urllib.parse import urljoin
 from fastapi.middleware.cors import CORSMiddleware
+import numpy as np
 
 app = FastAPI()
 
@@ -30,23 +31,31 @@ with open("data.json", "r") as f:
 images_data_list = list(images_data.values())
 
 @app.get("/", response_model=ImageList)
-async def list_images(request: Request, page: int = 1, limit: int = 6):
+async def list_images(request: Request, page: int = 1, limit: int = 6, filter = None):
     # TODO: Implement the filtering engine
     
     server_url = urljoin(str(request.url), '/')
     start = (page - 1) * limit
     end = start + limit
-    total_images = len(images_data_list)
-    total_pages = total_images // limit + (1 if total_images % limit > 0 else 0)
 
+    if filter is None:
+        filtered_images = images_data_list
+    else:
+        print(type(filter))
+        filter_color = (int(channel_level) for channel_level in filter.split(","))
+        filtered_images = filter_by_cube(filter_color, images_data_list)
+        
+    total_images = len(filtered_images)
+    total_pages = total_images // limit + (1 if total_images % limit > 0 else 0)
+    
     images = []
-    for image in images_data_list[start:end]:
+    for image in filtered_images[start:end]:
         image["url"] = f"{server_url}image/{image['filename']}"
         images.append(image)
     
     return {
         "page": page,
-        "results": len(images_data_list[start:end]),
+        "results": len(filtered_images[start:end]),
         "total": total_images,
         "total_pages": total_pages,
         "images": [Image(**image) for image in images]
@@ -76,3 +85,32 @@ async def get_image(request: Request, param: Union[int, str]):
             raise HTTPException(status_code=404, detail="Filename not found")
         return FileResponse(image_path)
     
+class Cube:
+    def __init__(self, center, distance):
+        self.center_r, self.center_g, self.center_b = center
+        self.distance = distance
+        self.r_range = range(self.center_r-distance, self.center_r+distance)
+        self.g_range = range(self.center_g-distance, self.center_g+distance)
+        self.b_range = range(self.center_b-distance, self.center_b+distance)
+    
+    def contains(self, color):
+        r,g,b = color
+        if r in self.r_range and g in self.g_range and b in self.b_range:
+            return True
+        return False
+        
+
+def filter_by_cube(color: np.ndarray, images, reach=0.0001, levels=256):
+    size = levels**3
+    distance_from_center = round((size*reach)**(1/3))
+    filtering_cube = Cube(color, distance_from_center)
+    filtered_images = []
+    for image in images:
+        palette = image["palette"]
+        for priority, color in enumerate(palette):
+            if filtering_cube.contains(color):
+                filtered_images.append((image, priority))
+                break
+    filtered_images = sorted(filtered_images, key = lambda x: x[1])
+    filtered_images = [element[0] for element in filtered_images]
+    return filtered_images

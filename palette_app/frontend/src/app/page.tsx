@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import styles from './styles.module.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 
@@ -30,18 +30,26 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
   // page state
   const [page, setPage] = useState(1)
   const [data, setData] = useState<ImagesResponse>(initialData)
+  const prevFilter = useRef<string>()
+  const filter = params.searchParams.filter ? params.searchParams.filter.split(',') : undefined
 
   useEffect(() => {
     const page_number = parseInt(params.searchParams.page || '1')
-    if (page_number !== page)
+    if (page_number !== page) {
       setPage(page_number)
-  }, [params.searchParams.page])
+    }
+
+    // if the filter was removed, fetch the data again
+    else if (!filter && prevFilter.current) {
+      fetchImages()
+    }
+    prevFilter.current = params.searchParams.filter
+  }, [params.searchParams.page, filter])
 
   useEffect(() => {
     fetchImages()
   }, [page])
 
-  const filter = params.searchParams.filter ? params.searchParams.filter.split(',') : undefined
 
   // fetch data from API
   const fetchImages = async () => {

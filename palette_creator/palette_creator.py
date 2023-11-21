@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-from palette_creator.methods import KMeans, Model, MedianCut
+from palette_creator.methods import KMeans, Method, MedianCut
 
 
 class PaletteCreator:
@@ -16,7 +16,7 @@ class PaletteCreator:
         """
 
         self.method = method
-        self.__model = self.__init_model(method, num_colors)
+        self.__model = self.__init_method(method, num_colors)
         self.num_colors = num_colors
 
     def create_palette(self, images: list[np.ndarray]) -> list[tuple[list, list]]:
@@ -42,7 +42,7 @@ class PaletteCreator:
             results.append((palette, proportions))
         return results
 
-    def __init_model(self, method, num_colors) -> Model:
+    def __init_method(self, method, num_colors) -> Method:
         if method == "kmeans":
             return KMeans(n_clusters=num_colors, n_init="auto")
         elif method == "median_cut":

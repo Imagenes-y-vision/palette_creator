@@ -51,3 +51,8 @@ def quantize_image(image: np.ndarray, palette: np.ndarray):
     mapped_image = palette[nearest_color_indices].reshape(image.shape)
     return mapped_image
     
+def bit_cut(image: np.ndarray, cut=3):
+    return image//(2**cut)
+
+def bit_amplify(image: np.ndarray, amplify=3):
+    return image*(2**amplify)

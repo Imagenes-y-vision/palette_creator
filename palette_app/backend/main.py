@@ -89,7 +89,6 @@ async def get_image(request: Request, param: Union[int, str], method = None):
                 image["palette"] = image["palettes_by_method"][method]
             else:
                 image["palette"] = image["palettes_by_method"]["kmeans"]
-            print(image)
             image["url"] = f"{server_url}image/{image['filename']}"
             return ImagePalette(**image)
         raise HTTPException(status_code=404, detail="Image ID not found")

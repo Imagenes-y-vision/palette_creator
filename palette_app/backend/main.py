@@ -31,19 +31,24 @@ with open("data.json", "r") as f:
 images_data_list = list(images_data.values())
 
 @app.get("/", response_model=ImageList)
-async def list_images(request: Request, page: int = 1, limit: int = 6, filter = None):
+async def list_images(request: Request, page: int = 1, limit: int = 6, filter = None, method = None, distance = 14):
     # TODO: Implement the filtering engine
     
     server_url = urljoin(str(request.url), '/')
     start = (page - 1) * limit
     end = start + limit
 
+    if method is None:
+        method = "kmeans"
+
+    for image in images_data_list:
+        image["palette"] = image["palettes_by_method"][method]
+    
     if filter is None:
         filtered_images = images_data_list
     else:
-        print(type(filter))
         filter_color = (int(channel_level) for channel_level in filter.split(","))
-        filtered_images = filter_by_cube(filter_color, images_data_list)
+        filtered_images = filter_by_cube(filter_color, images_data_list, distance_from_center = int(distance))
         
     total_images = len(filtered_images)
     total_pages = total_images // limit + (1 if total_images % limit > 0 else 0)
@@ -62,8 +67,14 @@ async def list_images(request: Request, page: int = 1, limit: int = 6, filter = 
     }
 
 
+@app.get("/methods")
+async def get_methods():
+    image_info = images_data_list[0]
+    return list(image_info["palettes_by_method"].keys())
+
+
 @app.get("/image/{param}", response_model=None)
-async def get_image(request: Request, param: Union[int, str]):
+async def get_image(request: Request, param: Union[int, str], method = None):
     try:
         param = int(param)
     except:
@@ -74,6 +85,11 @@ async def get_image(request: Request, param: Union[int, str]):
         image_id = str(param)
         if image_id in images_data:
             image = images_data[image_id]
+            if method is not None:
+                image["palette"] = image["palettes_by_method"][method]
+            else:
+                image["palette"] = image["palettes_by_method"]["kmeans"]
+            print(image)
             image["url"] = f"{server_url}image/{image['filename']}"
             return ImagePalette(**image)
         raise HTTPException(status_code=404, detail="Image ID not found")
@@ -100,9 +116,7 @@ class Cube:
         return False
         
 
-def filter_by_cube(color: np.ndarray, images, reach=0.0001, levels=256):
-    size = levels**3
-    distance_from_center = round((size*reach)**(1/3))
+def filter_by_cube(color: np.ndarray, images, distance_from_center=14, levels=256):
     filtering_cube = Cube(color, distance_from_center)
     filtered_images = []
     for image in images:

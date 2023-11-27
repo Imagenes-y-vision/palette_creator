@@ -4,6 +4,7 @@ import Image from 'next/image'
 import styles from './styles.module.css'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 
 type ImagesResponse = {
@@ -30,8 +31,18 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
   // page state
   const [page, setPage] = useState(1)
   const [data, setData] = useState<ImagesResponse>(initialData)
+  const [availableMethods, setAvailableMethods] = useState<string[]>([])
+  const [selectedMethod, setSelectedMethod] = useState<string>('')
   const prevFilter = useRef<string>()
+  const prevMethod = useRef<string>('')
+  const router = useRouter()
+
   const filter = params.searchParams.filter ? params.searchParams.filter.split(',') : undefined
+
+  useEffect(() => {
+    fetchMethods()
+    loadSelectedMethod()
+  }, [])
 
   useEffect(() => {
     const page_number = parseInt(params.searchParams.page || '1')
@@ -50,8 +61,37 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
     fetchImages()
   }, [page])
 
+  useEffect(() => {
+    if (filter && prevMethod.current !== selectedMethod) {
+      prevMethod.current = selectedMethod
+      if (page !== 1) {
+        router.push(`/?page=1&filter=${filter.join(',')}`)
+      } else {
+        fetchImages()
+      }
+    }
+  }, [selectedMethod])
+
+  const loadSelectedMethod = () => {
+    const selectedMethod = localStorage.getItem('selectedMethod')
+    setSelectedMethod(selectedMethod || '')
+    prevMethod.current = selectedMethod || ''
+  }
+
+  const onSelectedMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMethod(e.target.value)
+    // Save on local storage the selected method
+    localStorage.setItem('selectedMethod', e.target.value)
+  }
+
 
   // fetch data from API
+  const fetchMethods = async () => {
+    const response = await fetch(`http://localhost:8000/methods`)
+    const data_ = await response.json()
+    setAvailableMethods(data_)
+  }
+
   const fetchImages = async () => {
     // Wait until the page is the same as the page number in the query param
     if (page !== parseInt(params.searchParams.page || '1')) {
@@ -59,7 +99,8 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
     }
 
     if (filter) {
-      const response = await fetch(`http://localhost:8000?page=${page}&limit=6&filter=${filter.join(',')}`)
+      const method = selectedMethod ? `&method=${selectedMethod}` : ''
+      const response = await fetch(`http://localhost:8000?page=${page}&limit=6&filter=${filter.join(',')}${method}`)
       const data_ = await response.json()
       setData(data_)
       return
@@ -93,12 +134,23 @@ export default function Home(params: { params: {}, searchParams: {filter?: strin
           {/* Button to remove the filter */}
           <Link href="/">
             <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+            onClick={() => {localStorage.setItem('selectedMethod', '')}}
             >
               Remover filtro
             </button>
           </Link>
         </div>
       )}
+
+      {/* Select with available methods */}
+      {filter && (<select className="w-1/2 h-10 m-4 p-2 border border-gray-400 rounded-md"
+      value={selectedMethod}
+      onChange={onSelectedMethodChange}
+      >
+        {availableMethods.map((method, index) => (
+          <option key={index}>{method}</option>
+        ))}
+      </select>)}
 
       {/* Images list */}
       <div className={styles.images_list}>

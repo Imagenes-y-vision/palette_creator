@@ -79,6 +79,6 @@ class MedianCut(Method):
             box += [box1, box2]
 
         # the colors of the palette are the centroids
-        palette = [np.mean(box[i], axis=0) for i in range(len(box))]
+        palette = [np.mean(box[i], axis=0).astype(int) for i in range(len(box))]
         proportions = [len(box[i]) / len(img_reshape) for i in range(len(box))]
         return palette, proportions

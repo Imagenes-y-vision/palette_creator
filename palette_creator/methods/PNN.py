@@ -81,29 +81,14 @@ class PNN:
                 pixels, counts= np.unique(cluster, axis=0, return_counts=True)
                 palette_img.append(pixels[np.argmax(counts)])
         elif self.palette_method == 'mean':
-            palette_img = [np.mean(cluster, axis=0) for cluster in self.clusters]
+            palette_img = [np.mean(cluster, axis=0).astype(int) for cluster in self.clusters]
         elif self.palette_method == 'median':
-            palette_img = [np.median(cluster, axis=0) for cluster in self.clusters]
+            palette_img = [np.median(cluster, axis=0).astype(int) for cluster in self.clusters]
         else:
             raise NotImplementedError
         proportions_img = [len(cluster) / self.img_size for cluster in self.clusters]
 
         return palette_img, proportions_img
-    
-    def show_mapped_img(self, img):
-        palette, _ = self.get_palette()
-        palette = np.array(palette)
-        img_reshape = img.reshape(-1, 3)
-        mapped_img = np.copy(img_reshape).astype(int)
-        for i, cluster in enumerate(self.clusters):
-            for c_pixel in cluster:
-                condition = np.all(mapped_img == c_pixel, axis=1)
-                mapped_img[condition] = palette[i]
-
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-        ax1.imshow(img)
-        ax2.imshow(mapped_img.reshape(img.shape))
-        plt.show()
 
 
 class PNNQuantization(Method):
@@ -138,12 +123,32 @@ class PNNQuantization(Method):
             image = cv2.resize(image, None, fx = 0.75, fy = 0.75)
             img_reshape = image.reshape(-1, 3)
 
-        self.pnn_model = PNN(self.palette_colors, max_iterations=self.max_iterations, initial_clusters=self.initial_clusters, palette_method=self.palette_method)
-        self.pnn_model.fit(img_reshape)
+        pnn_model = PNN(self.palette_colors, max_iterations=self.max_iterations, initial_clusters=self.initial_clusters, palette_method=self.palette_method)
+        pnn_model.fit(img_reshape)
 
-        palette, proportions = self.pnn_model.get_palette()
+        palette, proportions = pnn_model.get_palette()
         
         return palette, proportions
+    
+    @staticmethod
+    def show_mapped_img(pc, img, max_iterations=400, initial_clusters=350, palette_method='mean'):
+        img_reshape = img.reshape(-1, 3)
+
+        pnn_model = PNN(pc.num_colors, max_iterations=max_iterations, initial_clusters=initial_clusters, palette_method=palette_method)
+        pnn_model.fit(img_reshape)
+        palette, _ = pnn_model.get_palette()
+
+        palette = np.array(palette)
+        mapped_img = np.copy(img_reshape).astype(int)
+        for i, cluster in enumerate(pnn_model.clusters):
+            for c_pixel in cluster:
+                condition = np.all(mapped_img == c_pixel, axis=1)
+                mapped_img[condition] = palette[i]
+
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+        ax1.imshow(img)
+        ax2.imshow(mapped_img.reshape(img.shape))
+        plt.show()
 
 
 class PairCombinations:

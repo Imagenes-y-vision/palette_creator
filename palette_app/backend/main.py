@@ -41,6 +41,9 @@ async def list_images(request: Request, page: int = 1, limit: int = 6, filter = 
     if method is None:
         method = "kmeans"
 
+    # URL encode the method name
+    method = method.replace(" ", "+")
+
     for image in images_data_list:
         image["palette"] = image["palettes_by_method"][method]
     
@@ -86,6 +89,8 @@ async def get_image(request: Request, param: Union[int, str], method = None):
         if image_id in images_data:
             image = images_data[image_id]
             if method is not None:
+                # URL encode the method name
+                method = method.replace(" ", "+")
                 image["palette"] = image["palettes_by_method"][method]
             else:
                 image["palette"] = image["palettes_by_method"]["kmeans"]

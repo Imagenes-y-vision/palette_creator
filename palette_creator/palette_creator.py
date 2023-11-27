@@ -6,7 +6,7 @@ from palette_creator.methods import KMeans, Method, MedianCut, PNNQuantization
 class PaletteCreator:
     """API Class for palette creators"""
 
-    def __init__(self, method: str, num_colors: int = 6, optimize_palette: bool = False):
+    def __init__(self, method: str, num_colors: int = 6, optimize_palette: bool = False, **kwargs):
         """
 
         :param str method: method used for creating the palette. Valid ones: 'kmeans', ...
@@ -17,7 +17,7 @@ class PaletteCreator:
 
         self.method = method
         self.optimize_palette = optimize_palette
-        self.model = self.__init_method(method, num_colors)
+        self.model = self.__init_method(method, num_colors, **kwargs)
         self.num_colors = num_colors
         if self.optimize_palette:
             self.num_colors += 2
@@ -50,13 +50,13 @@ class PaletteCreator:
             proportions.append(proportions_img)
         return palettes, proportions
 
-    def __init_method(self, method, num_colors) -> Method:
+    def __init_method(self, method, num_colors, **kwargs) -> Method:
         if method == "kmeans":
             return KMeans(n_clusters=num_colors, n_init="auto")
-        elif method == "median_cut":
+        elif method == "median-cut":
             return MedianCut(palette_colors=num_colors)
         elif method == "pnn":
-            return PNNQuantization(palette_colors=num_colors, max_iterations=10000, initial_clusters=350, palette_method='mode')
+            return PNNQuantization(palette_colors=num_colors, max_iterations=10000, initial_clusters=350, **kwargs)
 
         else:
             raise NotImplementedError

@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-from palette_creator.methods import KMeans, Method, MedianCut, PNNQuantization
+from palette_creator.methods import KMeans, Method, MedianCut, PNNQuantization, NeuralNetwork
 
 
 class PaletteCreator:
@@ -57,7 +57,8 @@ class PaletteCreator:
             return MedianCut(palette_colors=num_colors)
         elif method == "pnn":
             return PNNQuantization(palette_colors=num_colors, max_iterations=10000, initial_clusters=350, **kwargs)
-
+        elif method == "neural_network":
+            return NeuralNetwork(palette_size=num_colors, **kwargs)
         else:
             raise NotImplementedError
 

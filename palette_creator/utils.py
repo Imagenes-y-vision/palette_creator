@@ -1,6 +1,49 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def compare_palettes(palettes, names, color_size=10, img=None):
+    """
+    Compare a palettes of colors
+
+    Args:
+        palette (list): List of palettes
+        names (list): List of names for each palette
+        color_size (int): Size of the color square
+        img (np.array): Original image to display
+    """
+    # Display the original image
+    if img is not None:
+        plt.imshow(img)
+        plt.axis("off")
+        
+    # n_subplots = len(palettes) + 1 if img is not None else len(palettes)
+    n_subplots = len(palettes)
+    rows = n_subplots // 4 + 1
+    columns = 4 if n_subplots > 4 else n_subplots
+    fig, axs = plt.subplots(rows, columns, figsize=(15, 5))
+    axs = axs.flatten()
+
+
+    for i, ax in enumerate(axs):
+        if i >= len(palettes):
+            ax.axis("off")
+            continue
+        palette = eval(palettes[i])
+        palette_img = np.array([])
+        # ax = axs[i]
+        for color in palette:
+            color_img = np.array([[color] * color_size] * color_size).astype(int)
+            # Display a colored square
+            palette_img = np.concatenate([palette_img, color_img], axis=1) if palette_img.size else color_img
+
+        ax.set_title(names[i], fontsize=8)
+        ax.imshow(palette_img)
+
+        # Remove axes and labels
+        ax.axis("off")
+
+        # Show the figure
+    plt.show()
 
 def show_palette(palette, color_size=10, img=None):
     """
